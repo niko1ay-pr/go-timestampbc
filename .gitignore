@@ -29,6 +29,9 @@ go.work.sum
 .env.local
 .env.*.local
 
+.air.toml
+
+tmp/
 bin/
 data/
 *.db
