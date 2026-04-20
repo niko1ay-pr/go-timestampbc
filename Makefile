@@ -1,7 +1,19 @@
-.PHONY: run test build clean migrate docker-build
+.PHONY: run setup test build clean migrate docker-build
 
 BINARY_NAME=timestampbc
 BUILD_DIR=./bin
+
+setup:
+	@echo "Setting up environment..."
+	@if [ ! -f .env ]; then \
+		cp .env.example .env; \
+		echo ".env file created from .env.example"; \
+		echo "Edit .env file to configure your environment"; \
+	else \
+		echo ".env file already exists"; \
+	fi
+	@mkdir -p ./data
+	@echo "Setup complete!"
 
 run:
 	@echo "Starting server..."

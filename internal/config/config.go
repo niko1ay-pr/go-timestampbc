@@ -1,6 +1,11 @@
 package config
 
-import "github.com/caarlos0/env"
+import (
+	"log/slog"
+
+	"github.com/caarlos0/env"
+	"github.com/joho/godotenv"
+)
 
 type Config struct {
 	HTTPPort string `env:"HTTP_PORT" envDefault:"8008"`
@@ -17,6 +22,9 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
+	if err := godotenv.Load(); err != nil {
+		slog.Debug("no .env file found, using default values", "error", err)
+	}
 	cfg := &Config{}
 	if err := env.Parse(cfg); err != nil {
 		return nil, err
