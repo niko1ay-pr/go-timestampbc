@@ -15,7 +15,7 @@ type Vote struct {
 	Election_id   uint64     `json:"election_id" db:"election_id"`
 	Candidate_id  uint64     `json:"candidate_id" db:"candidate_id"`
 	Random_num    int64      `json:"random_num" db:"random_num"`
-	Hash          string     `json:"hash" db:"hash"`
+	Hash          string     `json:"hash" db:"hash"` // SHA256(election_id + candidate_id + random_num)
 	Status        string     `json:"status" db:"status"`
 	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
 	ConfirmedAt   *time.Time `json:"confirmed_at,omitempty" db:"confirmed_at"`
