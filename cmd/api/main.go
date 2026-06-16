@@ -5,6 +5,7 @@ import (
 	mw "go-timestampbc/internal/api/middleware"
 	"go-timestampbc/internal/config"
 	"go-timestampbc/internal/logger"
+	"go-timestampbc/internal/store/sqlite"
 	"log/slog"
 	"net"
 	"net/http"
@@ -34,6 +35,19 @@ func main() {
 		"http_port", cfg.HTTPPort,
 	)
 
+	startupCtx, startupCancel := context.WithTimeout(
+		context.Background(),
+		time.Duration(cfg.StartupTimeout)*time.Second,
+	)
+	defer startupCancel()
+
+	sqliteClient, err := sqlite.NewClient(startupCtx, cfg.SQLitePath)
+	if err != nil {
+		logger.Error("failed to init sqlite", "error", err)
+	}
+	defer sqliteClient.Close()
+	logger.Info("sqlite initialized", "path", cfg.SQLitePath)
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -50,7 +64,6 @@ func main() {
 	})
 
 	addr := net.JoinHostPort(cfg.HTTPHost, cfg.HTTPPort)
-	logger.Info("starting HTTP-server", "address", addr)
 
 	srv := &http.Server{
 		Addr:    addr,

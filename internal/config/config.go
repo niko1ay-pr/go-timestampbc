@@ -19,6 +19,8 @@ type Config struct {
 
 	AppEnv   string `env:"APP_ENV" envDefault:"develop"`
 	LogLevel string `env:"LOG_LEVEL" envDefault:"info"`
+
+	StartupTimeout int `env:"STARTUP_TIMEOUT" envDefault:"7"` // seconds
 }
 
 func Load() (*Config, error) {
