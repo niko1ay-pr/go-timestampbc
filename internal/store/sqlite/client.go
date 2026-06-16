@@ -17,20 +17,11 @@ type Client struct {
 	db *sql.DB
 }
 
-func (c *Client) migrate(ctx context.Context) error {
-	migration, err := migrationsFS.ReadFile("migrations/001_init.sql")
-	if err != nil {
-		return fmt.Errorf("failed to read migration: %w", err)
+func NewClient(ctx context.Context, dbPath string, opts ...Option) (*Client, error) {
+	var o options
+	for _, fn := range opts {
+		fn(&o)
 	}
-
-	if _, err := c.db.ExecContext(ctx, string(migration)); err != nil {
-		return fmt.Errorf("failed to exec migrations: %w", err)
-	}
-
-	return nil
-}
-
-func NewClient(ctx context.Context, dbPath string) (*Client, error) {
 
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
@@ -38,12 +29,16 @@ func NewClient(ctx context.Context, dbPath string) (*Client, error) {
 	}
 
 	if err := db.PingContext(ctx); err != nil {
+		db.Close()
 		return nil, fmt.Errorf("failded to ping database: %w", err)
 	}
 	client := &Client{db: db}
 
-	if err := client.migrate(ctx); err != nil {
-		return nil, fmt.Errorf("migration failed: %w", err)
+	if !o.skipMigrations {
+		if err := MigrateUp(ctx, db); err != nil {
+			db.Close()
+			return nil, fmt.Errorf("migration failed: %w", err)
+		}
 	}
 
 	slog.InfoContext(ctx, "Sqlite connected", "path", dbPath)

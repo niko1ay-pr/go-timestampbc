@@ -1,3 +1,4 @@
+-- +goose Up
 CREATE TABLE IF NOT EXISTS elections (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -26,3 +27,7 @@ CREATE INDEX IF NOT EXISTS idx_votes_election_id ON votes(election_id);
 CREATE INDEX IF NOT EXISTS idx_votes_hash ON votes(hash);
 CREATE INDEX IF NOT EXISTS idx_votes_status ON votes(status);
 CREATE INDEX IF NOT EXISTS idx_elections_status ON elections(status);
+
+-- +goose Down
+DROP TABLE IF EXISTS votes;
+DROP TABLE IF EXISTS elections;

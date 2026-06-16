@@ -44,6 +44,7 @@ func main() {
 	sqliteClient, err := sqlite.NewClient(startupCtx, cfg.SQLitePath)
 	if err != nil {
 		logger.Error("failed to init sqlite", "error", err)
+		os.Exit(0)
 	}
 	defer sqliteClient.Close()
 	logger.Info("sqlite initialized", "path", cfg.SQLitePath)
