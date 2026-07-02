@@ -11,9 +11,9 @@ CREATE TABLE IF NOT EXISTS polls (
 CREATE TABLE IF NOT EXISTS ballots (
     id TEXT PRIMARY KEY,
     poll_id TEXT NOT NULL,
-    random_num INT NOT NULL,
+    random_num INTEGER NOT NULL,
     hash TEXT NOT NULL UNIQUE,
-    answers TEXT,
+    answers TEXT NOT NULL,
     status TEXT NOT NULL CHECK (status in ('pending', 'confirmed', 'invalid')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     confirmed_at TIMESTAMP NULL,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS questions (
     poll_id TEXT NOT NULL,
     title TEXT NOT NULL,
     type TEXT NOT NULL CHECK (type in ('single', 'multiple')),
-    sequence INT NOT NULL,
+    sequence INT NOT NULL DEFAULT 0,
 
     FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE CASCADE
 );
@@ -37,12 +37,13 @@ CREATE TABLE IF NOT EXISTS question_options (
     id TEXT PRIMARY KEY,
     question_id TEXT NOT NULL,
     title TEXT NOT NULL,
-    sequence INT NOT NULL,
+    sequence INT NOT NULL DEFAULT 0,
 
     FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
 );
 
 
+CREATE INDEX IF NOT EXISTS idx_polls_status ON polls(status);
 CREATE INDEX IF NOT EXISTS idx_questions_poll_id ON questions(poll_id);
 CREATE INDEX IF NOT EXISTS idx_question_options_question_id ON question_options(question_id);
 CREATE INDEX IF NOT EXISTS idx_ballot_poll_id ON ballots(poll_id);
