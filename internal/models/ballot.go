@@ -13,6 +13,7 @@ const (
 type Ballot struct {
 	ID            string       `json:"id" db:"id"`
 	PollID        string       `json:"poll_id" db:"poll_id"`
+	FlatID        string       `json:"flat_id" db:"flat_id"`
 	RandomNum     int64        `json:"random_num" db:"random_num"`
 	Hash          string       `json:"hash" db:"hash"` // SHA256(poll_id + answers + random_num)
 	Answers       string       `json:"answers" db:"answers"`
@@ -26,6 +27,7 @@ type Ballot struct {
 type Proof struct {
 	PollID    string `json:"poll_id"`
 	BallotID  string `json:"ballot_id"`
+	FlatID    string `json:"flat_id"`
 	RandomNum string `json:"random_num"`
 	Answers   string `json:"answers"`
 }

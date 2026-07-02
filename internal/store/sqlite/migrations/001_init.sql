@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS polls (
 CREATE TABLE IF NOT EXISTS ballots (
     id TEXT PRIMARY KEY,
     poll_id TEXT NOT NULL,
+    flat_id TEXT NOT NULL,
     random_num INTEGER NOT NULL,
     hash TEXT NOT NULL UNIQUE,
     answers TEXT NOT NULL,
@@ -20,7 +21,8 @@ CREATE TABLE IF NOT EXISTS ballots (
     block_hash TEXT NULL,
     transaction_id TEXT NULL,
 
-    FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE CASCADE
+    FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE CASCADE,
+    UNIQUE(poll_id, flat_id)
 );
 
 CREATE TABLE IF NOT EXISTS questions (
@@ -48,6 +50,7 @@ CREATE INDEX IF NOT EXISTS idx_questions_poll_id ON questions(poll_id);
 CREATE INDEX IF NOT EXISTS idx_question_options_question_id ON question_options(question_id);
 CREATE INDEX IF NOT EXISTS idx_ballot_poll_id ON ballots(poll_id);
 CREATE INDEX IF NOT EXISTS idx_ballots_status ON ballots(status);
+CREATE INDEX IF NOT EXISTS idx_ballots_flat_id ON ballots(flat_id);
 
 -- +goose Down
 DROP TABLE IF EXISTS polls;
