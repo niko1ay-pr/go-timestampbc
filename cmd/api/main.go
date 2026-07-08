@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	mw "go-timestampbc/internal/api/middleware"
+	"go-timestampbc/internal/api/handler"
 	"go-timestampbc/internal/config"
 	"go-timestampbc/internal/logger"
 	"go-timestampbc/internal/store/sqlite"
@@ -13,9 +13,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
@@ -44,28 +41,15 @@ func main() {
 	sqliteClient, err := sqlite.NewClient(startupCtx, cfg.SQLitePath)
 	if err != nil {
 		logger.Error("failed to init sqlite", "error", err)
-		os.Exit(0)
+		os.Exit(1)
 	}
 	defer sqliteClient.Close()
 	logger.Info("sqlite initialized", "path", cfg.SQLitePath)
 
-	r := chi.NewRouter()
-
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(mw.Logger(logger))
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(60 * time.Second))
-
-	// Health-check endpoint
-	r.Get("/health", func(w http.ResponseWriter, h *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok", "timestamp":"` + time.Now().Format(time.RFC3339) + `"}`))
-	})
+	sqliteStore := sqlite.NewStore(sqliteClient.DB())
+	r := handler.NewRouter(sqliteStore, logger)
 
 	addr := net.JoinHostPort(cfg.HTTPHost, cfg.HTTPPort)
-
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: r,
