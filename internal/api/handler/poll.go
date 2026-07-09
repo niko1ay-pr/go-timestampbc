@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"go-timestampbc/internal/models"
+	"go-timestampbc/internal/domain"
 	"go-timestampbc/internal/store"
 	"net/http"
 )
 
 type PollGetter interface {
-	GetByID(ctx context.Context, id string) (*models.Poll, error)
+	GetByID(ctx context.Context, id string) (*domain.Poll, error)
 }
 
 func HandleGetPoll(pollGetter PollGetter) http.HandlerFunc {

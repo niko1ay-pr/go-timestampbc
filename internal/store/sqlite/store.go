@@ -1,20 +1,23 @@
 package sqlite
 
 import (
-	"context"
 	"database/sql"
-	"go-timestampbc/internal/models"
-	"go-timestampbc/internal/store"
+	"go-timestampbc/internal/domain"
 )
 
 type Store struct {
-	db *sql.DB
+	polls   *PollStore
+	ballots *BallotStore
 }
 
 func NewStore(db *sql.DB) *Store {
-	return &Store{db: db}
+	return &Store{polls: NewPollStore(db), ballots: NewBallotStore(db)}
 }
 
-func (s *Store) GetByID(ctx context.Context, id string) (*models.Poll, error) {
-	return nil, store.ErrNotFound
+func (s *Store) Polls() domain.PollStorage {
+	return s.polls
+}
+
+func (s *Store) Ballots() domain.BallotStorage {
+	return s.ballots
 }
