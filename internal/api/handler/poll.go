@@ -35,6 +35,23 @@ func HandleGetPoll(pollGetter PollGetter) http.HandlerFunc {
 	}
 }
 
+type PollCreater interface {
+	Create(ctx context.Context, poll *domain.Poll) error
+}
+
+func HandleCreatePoll(pollCreater PollCreater) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		// read poll from json
+		poll := &domain.Poll{}
+		err := pollCreater.Create(r.Context(), poll)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, apiError("creating error"))
+			return
+		}
+	}
+}
+
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
