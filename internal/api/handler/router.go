@@ -23,7 +23,7 @@ func NewRouter(st domain.Storage, sl *slog.Logger) *chi.Mux {
 	r.Route("/v1", func(v1 chi.Router) {
 		// GET /v1/polls/{pollId}
 		v1.Get("/polls/{pollId}", HandleGetPoll(st.Polls()))
-		v1.Post("/polls", HandleCreatePoll(st.Polls()))
+		v1.Post("/polls", HandleCreatePoll(sl, st.Polls()))
 	})
 	// Health-check endpoint
 	r.Get("/health", func(w http.ResponseWriter, h *http.Request) {

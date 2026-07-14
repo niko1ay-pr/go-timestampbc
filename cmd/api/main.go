@@ -16,12 +16,7 @@ import (
 )
 
 func main() {
-
-	cfg, err := config.Load()
-	if err != nil {
-		slog.Error("failed to load config", "error", err)
-		os.Exit(1)
-	}
+	cfg := config.MustLoad()
 
 	logger := logger.New(cfg.LogLevel)
 	slog.SetDefault(logger)
@@ -61,6 +56,7 @@ func main() {
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Error("server error", "error", err)
+			os.Exit(1)
 		}
 	}()
 

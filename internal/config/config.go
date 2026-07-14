@@ -2,6 +2,7 @@ package config
 
 import (
 	"log/slog"
+	"os"
 
 	"github.com/caarlos0/env"
 	"github.com/joho/godotenv"
@@ -23,13 +24,15 @@ type Config struct {
 	StartupTimeout int `env:"STARTUP_TIMEOUT" envDefault:"7"` // seconds
 }
 
-func Load() (*Config, error) {
+func MustLoad() *Config {
 	if err := godotenv.Load(); err != nil {
 		slog.Debug("no .env file found, using default values", "error", err)
 	}
 	cfg := &Config{}
 	if err := env.Parse(cfg); err != nil {
-		return nil, err
+		slog.Error("failed to load config", "error", err)
+		os.Exit(1)
 	}
-	return cfg, nil
+
+	return cfg
 }

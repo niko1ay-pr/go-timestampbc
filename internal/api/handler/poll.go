@@ -6,7 +6,11 @@ import (
 	"errors"
 	"go-timestampbc/internal/domain"
 	"go-timestampbc/internal/store"
+	"log/slog"
 	"net/http"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type PollGetter interface {
@@ -17,21 +21,21 @@ func HandleGetPoll(pollGetter PollGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		pollID := r.PathValue("pollId")
 		if pollID == "" {
-			writeJSON(w, http.StatusInternalServerError, apiError("pollId is required"))
+			respond(w, r, http.StatusInternalServerError, "pollId is required")
 			return
 		}
 
 		poll, err := pollGetter.GetByID(r.Context(), pollID)
 		if err != nil {
 			if errors.Is(err, store.ErrNotFound) {
-				writeJSON(w, http.StatusNotFound, apiError("poll not found"))
+				respondError(w, r, http.StatusNotFound, "poll not found")
 				return
 			}
-			writeJSON(w, http.StatusInternalServerError, apiError("internal server error"))
+			respondError(w, r, http.StatusInternalServerError, "internal server error")
 			return
 		}
 
-		writeJSON(w, http.StatusOK, poll)
+		respond(w, r, http.StatusOK, poll)
 	}
 }
 
@@ -39,25 +43,20 @@ type PollCreater interface {
 	Create(ctx context.Context, poll *domain.Poll) error
 }
 
-func HandleCreatePoll(pollCreater PollCreater) http.HandlerFunc {
+func HandleCreatePoll(sl *slog.Logger, pollCreater PollCreater) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// read poll from json
 		poll := &domain.Poll{}
+		json.NewDecoder(r.Body).Decode(poll)
+		poll.ID = uuid.New().String()
+		poll.CreatedAt = time.Now().UTC().Truncate(time.Second)
 		err := pollCreater.Create(r.Context(), poll)
 		if err != nil {
-			writeJSON(w, http.StatusInternalServerError, apiError("creating error"))
+			respondError(w, r, http.StatusInternalServerError, "creating error")
+			sl.Error("creating error", slog.String("error", err.Error()))
 			return
 		}
+
+		respond(w, r, http.StatusCreated, poll)
 	}
-}
-
-func writeJSON(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v)
-}
-
-func apiError(s string) *ErrorResponse {
-	return &ErrorResponse{Error: s}
 }

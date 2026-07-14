@@ -3,9 +3,14 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"errors"
+	"fmt"
 	"go-timestampbc/internal/domain"
 	"go-timestampbc/internal/store"
+)
+
+const (
+	pollQueryInsert = `INSERT INTO polls (id, title, status, start_time, end_time, created_at)
+						VALUES (?, ?, ?, ?, ?, ?)`
 )
 
 type PollStore struct {
@@ -21,5 +26,18 @@ func (p *PollStore) GetByID(ctx context.Context, id string) (*domain.Poll, error
 }
 
 func (p *PollStore) Create(ctx context.Context, poll *domain.Poll) error {
-	return errors.New("Creatign errror") // TODO
+	_, err := p.db.ExecContext(ctx, pollQueryInsert,
+		poll.ID,
+		poll.Title,
+		poll.Status,
+		poll.StartTime,
+		poll.EndTime,
+		poll.CreatedAt,
+	)
+
+	if err != nil {
+		return fmt.Errorf("create poll: %w", err)
+	}
+
+	return nil
 }
