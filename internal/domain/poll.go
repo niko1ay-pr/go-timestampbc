@@ -17,4 +17,5 @@ type Poll struct {
 	StartTime time.Time  `json:"start_time"`
 	EndTime   time.Time  `json:"end_time"`
 	CreatedAt time.Time  `json:"created_at"`
+	Questions []Question `json:"questions"`
 }

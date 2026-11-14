@@ -8,11 +8,12 @@ const (
 )
 
 type Question struct {
-	ID       string       `json:"id" db:"id"`
-	PollID   string       `json:"poll_id" db:"poll_id"`
-	Title    string       `json:"title" db:"title"`
-	Type     QuestionType `json:"type" db:"type"`
-	Sequence int          `json:"sequence" db:"sequence"`
+	ID       string           `json:"id"`
+	PollID   string           `json:"poll_id"`
+	Title    string           `json:"title"`
+	Type     QuestionType     `json:"type"`
+	Sequence int              `json:"sequence"`
+	Options  []QuestionOption `json:"question_options"`
 }
 
 type QuestionOption struct {

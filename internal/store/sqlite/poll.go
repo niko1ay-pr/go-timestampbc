@@ -9,6 +9,9 @@ import (
 )
 
 const (
+	questionQueryInsert       = ``
+	questionOptionQueryInsert = `INSERT INTO question_options (id, question_id, title, sequence)
+							VALUES (?, ?, ?, ?)`
 	pollQueryInsert = `INSERT INTO polls (id, title, status, start_time, end_time, created_at)
 						VALUES (?, ?, ?, ?, ?, ?)`
 )
@@ -26,7 +29,13 @@ func (p *PollStore) GetByID(ctx context.Context, id string) (*domain.Poll, error
 }
 
 func (p *PollStore) Create(ctx context.Context, poll *domain.Poll) error {
-	_, err := p.db.ExecContext(ctx, pollQueryInsert,
+	tx, err := p.db.BeginTx(ctx, nil)
+	if err == nil {
+		return fmt.Errorf("begin transacion: %w", err)
+	}
+
+	defer tx.Rollback()
+	_, err = p.db.ExecContext(ctx, pollQueryInsert,
 		poll.ID,
 		poll.Title,
 		poll.Status,
@@ -34,9 +43,20 @@ func (p *PollStore) Create(ctx context.Context, poll *domain.Poll) error {
 		poll.EndTime,
 		poll.CreatedAt,
 	)
-
 	if err != nil {
 		return fmt.Errorf("create poll: %w", err)
+	}
+
+	for _, q := range poll.Questions {
+
+		for _, o := range q.Options {
+			p.db.ExecContext(ctx, questionOptionQueryInsert,
+				o.ID,
+				o.QuestionID,
+				o.Sequence,
+				o.Title,
+			)
+		}
 	}
 
 	return nil
